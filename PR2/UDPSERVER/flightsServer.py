@@ -1,67 +1,87 @@
+# flightsServer.py — запуск сервера та цикл широкомовної розсилки
+
 import socket
-import random
-import json
 import threading
+import time
 
-RACES = [ 'UA123','DE321','USA666','PL333','FR945']
-
-
-STATUSES = ['BOARDING','COMPLETED','ONTIME']
-
-def flightsGen(races:list, statuses:list)->dict:
-    flights={}
-    for race in races:
-        flights[race]=random.choice(statuses)
-    return flights
+from flightsServerLogic import (
+    RACES, STATUSES, SERVER_PORT,
+    BROADCAST_INTERVAL,
+    flights_gen, update_flights,
+    build_flight_update,
+    get_ip, listen_clients, announce_server,
+)
 
 
+def broadcast_flights(sock, registered_clients, stop_event):
+    flights = flights_gen(RACES, STATUSES)
+    print('[INFO] Початковий стан рейсів:', flights)
 
+    while not stop_event.is_set():
+        flights = update_flights(flights, STATUSES)
+        payload = build_flight_update(flights)
 
-def get_ip():
-    s=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        s.connect(('8.8.8.8',1))
-        ip=s.getsockname()[0]
-    except Exception:
-        ip='127.0.0.1'
-    finally:
-        s.close()
-    return ip
+        print('\n[BROADCAST]', {r: s for r, s in flights.items()})
 
-def listen_clients(sock:socket.socket,registered_clients:set):
-    while True:
-        try:
-            data,user=sock.recvfrom(1024)
-            msg=json.loads(data.decode('utf-8'))
+        dead = set()
+        for client_addr in list(registered_clients):
+            try:
+                sock.sendto(payload, client_addr)
+            except OSError as e:
+                print(f'[WARN] Не вдалося надіслати до {client_addr}: {e}')
+                dead.add(client_addr)
 
-            command=msg.get('command')
-            if command=="CLIENT_REGISTER":
-                registered_clients.add(user)
-                print(f'Registered client {user}')
-            elif command=="CLIENT_DISCONNECT":
-                registered_clients.discard(user)
-                print(f'Disconnected client {user}')
-        except json.decoder.JSONDecodeError:
-            pass
-        except OSError:
-            print(f'Program exited')
-            break
+        registered_clients -= dead
+        time.sleep(BROADCAST_INTERVAL)
+
 
 def server_start():
-    registered_clients=set()
-    SERVER_IP=get_ip()
-    SERVER_PORT=9999
+    server_ip = get_ip()
+    registered_clients = set()
+    stop_event = threading.Event()
+
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    sock.bind((SERVER_IP,SERVER_PORT))
-    print(f'Server started with IP address {SERVER_IP}:{SERVER_PORT} ')
+    sock.bind((server_ip, SERVER_PORT))
+    print(f'[SERVER] Запущено на {server_ip}:{SERVER_PORT}')
 
-    listener_thread=threading.Thread(target=listen_clients,
-                                 args=(sock,registered_clients),
-                                 daemon=True)
-    listener_thread.start()
+    # Потік 1: слухає реєстрації від клієнтів
+    listener = threading.Thread(
+        target=listen_clients,
+        args=(sock, registered_clients, stop_event),
+        daemon=True
+    )
+
+    # Потік 2: розсилає статуси рейсів зареєстрованим клієнтам
+    broadcaster = threading.Thread(
+        target=broadcast_flights,
+        args=(sock, registered_clients, stop_event),
+        daemon=True
+    )
+
+    # Потік 3: broadcast-анонс "я тут" для автовідкриття ← НОВИЙ
+    announcer = threading.Thread(
+        target=announce_server,
+        args=(server_ip, SERVER_PORT, stop_event),
+        daemon=True
+    )
+
+    listener.start()
+    broadcaster.start()
+    announcer.start()
+
+    print('[SERVER] Натисніть Ctrl+C для зупинки.')
+    try:
+        while True:
+            time.sleep(0.5)
+    except KeyboardInterrupt:
+        print('\n[SERVER] Зупинка...')
+        stop_event.set()
+        sock.close()
+        listener.join(timeout=2)
+        broadcaster.join(timeout=2)
+        announcer.join(timeout=2)
+        print('[SERVER] Завершено.')
 
 
-
-
-
+if __name__ == '__main__':
+    server_start()

@@ -1,0 +1,17 @@
+syntax = "proto3" ;
+
+package ClientManager;
+
+
+message ClientStatus{ 
+    int32 clientID=1;
+    bool isRegistered=2;
+}
+
+
+service PingPong{
+
+    rpc connectClient(ClientStatus) returns (ClientStatus);
+
+    rpc disonnectClient(ClientStatus) returns (ClientStatus);
+}
