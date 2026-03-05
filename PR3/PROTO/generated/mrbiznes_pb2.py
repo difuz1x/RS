@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0emrbiznes.proto\x12\tconverter\"\x07\n\x05\x45mpty\"M\n\rConvertStruct\x12\x14\n\x0c\x66romCurrency\x18\x01 \x01(\t\x12\x12\n\ntoCurrency\x18\x02 \x01(\t\x12\x12\n\ntrade_rate\x18\x03 \x01(\x02\"4\n\tTradeList\x12\'\n\x05trade\x18\x01 \x03(\x0b\x32\x18.converter.ConvertStruct2N\n\x11\x43urrencyConverter\x12\x39\n\x0fgetExchangeRate\x12\x10.converter.Empty\x1a\x14.converter.TradeListb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0emrbiznes.proto\x12\tconverter\"\x07\n\x05\x45mpty\"M\n\rConvertStruct\x12\x14\n\x0c\x66romCurrency\x18\x01 \x01(\t\x12\x12\n\ntoCurrency\x18\x02 \x01(\t\x12\x12\n\ntrade_rate\x18\x03 \x01(\x02\"4\n\tTradeList\x12\'\n\x05trade\x18\x01 \x03(\x0b\x32\x18.converter.ConvertStruct\"J\n\x0e\x43onvertRequest\x12\x14\n\x0c\x66romCurrency\x18\x01 \x01(\t\x12\x12\n\ntoCurrency\x18\x02 \x01(\t\x12\x0e\n\x06\x61mount\x18\x03 \x01(\x02\"K\n\x0f\x43onvertResponse\x12\x0e\n\x06result\x18\x01 \x01(\x02\x12\x14\n\x0c\x66romCurrency\x18\x02 \x01(\t\x12\x12\n\ntoCurrency\x18\x03 \x01(\t\"#\n\x0b\x42\x61seRequest\x12\x14\n\x0c\x62\x61seCurrency\x18\x01 \x01(\t2\xdd\x01\n\x11\x43urrencyConverter\x12\x39\n\x0fgetExchangeRate\x12\x10.converter.Empty\x1a\x14.converter.TradeList\x12\x46\n\rconvertAmount\x12\x19.converter.ConvertRequest\x1a\x1a.converter.ConvertResponse\x12\x45\n\x0fgetRatesForBase\x12\x16.converter.BaseRequest\x1a\x18.converter.ConvertStruct0\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -37,6 +37,12 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CONVERTSTRUCT']._serialized_end=115
   _globals['_TRADELIST']._serialized_start=117
   _globals['_TRADELIST']._serialized_end=169
-  _globals['_CURRENCYCONVERTER']._serialized_start=171
-  _globals['_CURRENCYCONVERTER']._serialized_end=249
+  _globals['_CONVERTREQUEST']._serialized_start=171
+  _globals['_CONVERTREQUEST']._serialized_end=245
+  _globals['_CONVERTRESPONSE']._serialized_start=247
+  _globals['_CONVERTRESPONSE']._serialized_end=322
+  _globals['_BASEREQUEST']._serialized_start=324
+  _globals['_BASEREQUEST']._serialized_end=359
+  _globals['_CURRENCYCONVERTER']._serialized_start=362
+  _globals['_CURRENCYCONVERTER']._serialized_end=583
 # @@protoc_insertion_point(module_scope)

@@ -39,12 +39,34 @@ class CurrencyConverterStub(object):
                 request_serializer=mrbiznes__pb2.Empty.SerializeToString,
                 response_deserializer=mrbiznes__pb2.TradeList.FromString,
                 _registered_method=True)
+        self.convertAmount = channel.unary_unary(
+                '/converter.CurrencyConverter/convertAmount',
+                request_serializer=mrbiznes__pb2.ConvertRequest.SerializeToString,
+                response_deserializer=mrbiznes__pb2.ConvertResponse.FromString,
+                _registered_method=True)
+        self.getRatesForBase = channel.unary_stream(
+                '/converter.CurrencyConverter/getRatesForBase',
+                request_serializer=mrbiznes__pb2.BaseRequest.SerializeToString,
+                response_deserializer=mrbiznes__pb2.ConvertStruct.FromString,
+                _registered_method=True)
 
 
 class CurrencyConverterServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def getExchangeRate(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def convertAmount(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def getRatesForBase(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -57,6 +79,16 @@ def add_CurrencyConverterServicer_to_server(servicer, server):
                     servicer.getExchangeRate,
                     request_deserializer=mrbiznes__pb2.Empty.FromString,
                     response_serializer=mrbiznes__pb2.TradeList.SerializeToString,
+            ),
+            'convertAmount': grpc.unary_unary_rpc_method_handler(
+                    servicer.convertAmount,
+                    request_deserializer=mrbiznes__pb2.ConvertRequest.FromString,
+                    response_serializer=mrbiznes__pb2.ConvertResponse.SerializeToString,
+            ),
+            'getRatesForBase': grpc.unary_stream_rpc_method_handler(
+                    servicer.getRatesForBase,
+                    request_deserializer=mrbiznes__pb2.BaseRequest.FromString,
+                    response_serializer=mrbiznes__pb2.ConvertStruct.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -86,6 +118,60 @@ class CurrencyConverter(object):
             '/converter.CurrencyConverter/getExchangeRate',
             mrbiznes__pb2.Empty.SerializeToString,
             mrbiznes__pb2.TradeList.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def convertAmount(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/converter.CurrencyConverter/convertAmount',
+            mrbiznes__pb2.ConvertRequest.SerializeToString,
+            mrbiznes__pb2.ConvertResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def getRatesForBase(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(
+            request,
+            target,
+            '/converter.CurrencyConverter/getRatesForBase',
+            mrbiznes__pb2.BaseRequest.SerializeToString,
+            mrbiznes__pb2.ConvertStruct.FromString,
             options,
             channel_credentials,
             insecure,

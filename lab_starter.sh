@@ -1,32 +1,47 @@
 #!/bin/bash
 
-if [[ -f ".venv/bin/python" ]]; then
-    PYTHON=".venv/bin/python"
-else
-    PYTHON="python"
-fi
+source ./.venv/bin/activate
+
+PYTHON=".venv/bin/python"
 
 SERVER=$1
 CLIENT=$2
+CLIENT_AMOUNT=${3:-1}
 
-
-if [[ -z "$SERVER" && -z "$CLIENT" ]] || [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]];  then
-
-    echo -e "The usage of this utility is: \n\n lab_start \t <server> \t <client> \n\n\t\t or \n\n $0 \t <server> \t <client>"
+if [[ -z "$SERVER" && -z "$CLIENT" ]] || [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
+    echo -e "The usage of this utility is: \n\n lab_start \t <server> \t <client> \t <client_amount> \n\n\t\t or \n\n $0 \t <server> \t <client> \t <client_amount>"
     exit 0
-fi 
+fi
+
+LOG_FILE="/home/difuzix/Загальне/Розподілені системи/RS/lab_starter.log"
+> "$LOG_FILE"
+konsole -e bash -c "tail -f '$LOG_FILE'; exec bash" &
 
 if [[ -n "$SERVER" ]]; then
-
-    $PYTHON  $SERVER &
-    echo "Server started with PID $!"
-
+    $PYTHON $SERVER & SERVER_PID=$!
+    echo "Server started with PID $SERVER_PID" >> "$LOG_FILE"
 fi
-sleep 2 
+
+sleep 2
 
 if [[ -n "$CLIENT" ]]; then
+    client_pids=()
+    for i in $(seq 1 $CLIENT_AMOUNT); do
+        $PYTHON $CLIENT & client_pid=$!
+        client_pids+=($client_pid)
+        echo "Client $i started with PID $client_pid" >> "$LOG_FILE"
+    done
 
-    $PYTHON $CLIENT 
-    echo "Client started with PID $!"
+    for client_pid in "${client_pids[@]}"; do
+        wait $client_pid
+        echo "Client $client_pid finished" >> "$LOG_FILE"
+    done
 
-fi 
+    echo "Shutting down server with PID $SERVER_PID" >> "$LOG_FILE"
+    kill $SERVER_PID 2>/dev/null
+else
+    echo "No client specified, exiting" >> "$LOG_FILE"
+    echo "Shutting down server with PID $SERVER_PID" >> "$LOG_FILE"
+    kill $SERVER_PID 2>/dev/null
+    exit 0
+fi
