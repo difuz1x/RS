@@ -13,7 +13,6 @@ message ConvertStruct {
    float trade_rate=3;
 }
 
-
 message TradeList {
     repeated ConvertStruct trade=1;
 }
