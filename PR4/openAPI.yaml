@@ -1,0 +1,160 @@
+openapi: "3.1.0"
+info:
+  title: "Habit Tracker API"
+  version: "1.0.0"
+  description: "API для трекера звичок."
+
+paths:
+  /api/habits:
+    get:
+      summary: "Список звичок"
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Список звичок"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Habit"
+    post:
+      summary: "Створити звичку"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HabitCreate"
+      responses:
+        "201":
+          description: "Звичку створено"
+        "422":
+          description: "Помилка валідації"
+
+  /api/habits/leaderboard:
+    get:
+      summary: "Топ звичок за streak"
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: "Лідерборд"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Habit"
+
+  /api/habits/{habit_id}:
+    get:
+      summary: "Отримати звичку за ID"
+      parameters:
+        - name: habit_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: "Дані звички"
+        "404":
+          description: "Не знайдено"
+    put:
+      summary: "Оновити звичку"
+      parameters:
+        - name: habit_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HabitCreate"
+      responses:
+        "200":
+          description: "Оновлено"
+        "404":
+          description: "Не знайдено"
+    delete:
+      summary: "Видалити звичку"
+      parameters:
+        - name: habit_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: "Видалено"
+        "404":
+          description: "Не знайдено"
+
+  /api/habits/{habit_id}/check-in:
+    patch:
+      summary: "Відмітити виконання (збільшує streak)"
+      parameters:
+        - name: habit_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: "Streak збільшено"
+        "400":
+          description: "Вже виконано сьогодні/цього тижня"
+        "404":
+          description: "Не знайдено"
+
+components:
+  schemas:
+    HabitCreate:
+      type: object
+      required: [name, frequency]
+      properties:
+        name:
+          type: string
+          example: "Ранкова пробіжка"
+        category:
+          type: string
+          example: "sport"
+        frequency:
+          type: string
+          enum: [daily, weekly]
+          example: "daily"
+    Habit:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+        frequency:
+          type: string
+          enum: [daily, weekly]
+        streak:
+          type: integer
+        last_check_in:
+          type: string
+          format: date
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
