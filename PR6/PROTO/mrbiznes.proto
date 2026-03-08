@@ -1,0 +1,38 @@
+syntax = "proto3" ;
+
+
+package converter ;
+
+message Empty {};
+
+message ConvertStruct {
+   string fromCurrency = 1;
+   string toCurrency   = 2;
+   float  trade_rate   = 3;
+}
+
+message TradeList {
+    repeated ConvertStruct trade = 1;
+}
+
+message ConvertRequest {
+    string fromCurrency = 1;
+    string toCurrency   = 2;
+    float  amount       = 3;
+}
+
+message ConvertResponse {
+    float  result       = 1;
+    string fromCurrency = 2;
+    string toCurrency   = 3;
+}
+
+message BaseRequest {
+    string baseCurrency = 1;
+}
+
+service CurrencyConverter {
+    rpc getExchangeRate  (Empty)          returns (TradeList);
+    rpc convertAmount    (ConvertRequest) returns (ConvertResponse);
+    rpc getRatesForBase  (BaseRequest)    returns (stream ConvertStruct);
+}

@@ -1,0 +1,18 @@
+{
+  "admin": {
+    "password": "admin123",
+    "role": "admin"
+  },
+  "user": {
+    "password": "user123",
+    "role": "user"
+  },
+  "dif": {
+    "password": "d",
+    "role": "admin"
+  },
+  "a": {
+    "password": "a",
+    "role": "user"
+  }
+}

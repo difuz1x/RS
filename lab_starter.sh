@@ -13,9 +13,12 @@ if [[ -z "$SERVER" && -z "$CLIENT" ]] || [[ "$1" == "--help" ]] || [[ "$1" == "-
     exit 0
 fi
 
-LOG_FILE="/home/difuzix/Загальне/Розподілені системи/RS/lab_starter.log"
-> "$LOG_FILE"
-konsole -e bash -c "tail -f '$LOG_FILE'; exec bash" &
+LOG_FILE="/home/difuzix/Загальне/Розподілені системи/RS/lab_starter.log"> "$LOG_FILE"
+
+konsole -e bash -c "tail -f '$LOG_FILE'; exec bash" & KONSOLE_PID=$!
+echo "Konsole log file started with PID $KONSOLE_PID" >> "$LOG_FILE"
+
+
 
 if [[ -n "$SERVER" ]]; then
     $PYTHON $SERVER & SERVER_PID=$!
@@ -23,6 +26,23 @@ if [[ -n "$SERVER" ]]; then
 fi
 
 sleep 2
+AUTH_PID=$(pgrep -f "auth_server.py")
+
+shutdown_all() {
+
+    echo "Shutting down server with PID $SERVER_PID" >> "$LOG_FILE"
+    kill $SERVER_PID 2>/dev/null
+
+    if [[ -n "$AUTH_PID" ]]; then
+        kill $AUTH_PID 2>/dev/null
+        echo "Auth server with PID $AUTH_PID killed" >> "$LOG_FILE"
+    fi
+
+    echo "Konsole log file stopped with PID $KONSOLE_PID" >> "$LOG_FILE"
+    sleep 1
+    kill $KONSOLE_PID 2>/dev/null
+    
+}
 
 if [[ -n "$CLIENT" ]]; then
     client_pids=()
@@ -37,11 +57,8 @@ if [[ -n "$CLIENT" ]]; then
         echo "Client $client_pid finished" >> "$LOG_FILE"
     done
 
-    echo "Shutting down server with PID $SERVER_PID" >> "$LOG_FILE"
-    kill $SERVER_PID 2>/dev/null
+    shutdown_all
 else
     echo "No client specified, exiting" >> "$LOG_FILE"
-    echo "Shutting down server with PID $SERVER_PID" >> "$LOG_FILE"
-    kill $SERVER_PID 2>/dev/null
-    exit 0
+    shutdown_all
 fi
